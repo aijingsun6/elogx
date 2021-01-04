@@ -1,0 +1,15 @@
+{application, elogx,
+  [{description, "erlang logger extension"},
+    {vsn, "0.0.1"},
+    {registered, []},
+    {mod, {elogx_app, []}},
+    {applications,
+      [kernel,
+        stdlib
+      ]},
+    {env, []},
+    {modules, []},
+    {licenses, ["Apache 2.0"]},
+    {files,["src"]},
+    {links, []}
+  ]}.
