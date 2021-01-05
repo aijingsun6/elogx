@@ -1,8 +1,3 @@
-%%%-------------------------------------------------------------------
-%% @doc elogx top level supervisor.
-%% @end
-%%%-------------------------------------------------------------------
-
 -module(elogx_sup).
 
 -behaviour(supervisor).
@@ -14,7 +9,7 @@
 -define(SERVER, ?MODULE).
 
 start_link() ->
-    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+  supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 %% sup_flags() = #{strategy => strategy(),         % optional
 %%                 intensity => non_neg_integer(), % optional
@@ -26,10 +21,9 @@ start_link() ->
 %%                  type => worker(),       % optional
 %%                  modules => modules()}   % optional
 init([]) ->
-    SupFlags = #{strategy => one_for_all,
-                 intensity => 0,
-                 period => 1},
-    ChildSpecs = [],
-    {ok, {SupFlags, ChildSpecs}}.
+  SupFlags = #{strategy => one_for_all, intensity => 0, period => 1},
+  ChildSpecs = [],
+  logger:add_handlers(elogx),
+  {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions

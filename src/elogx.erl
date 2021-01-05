@@ -1,0 +1,6 @@
+-module(elogx).
+
+%% API
+-export([]).
+
+
