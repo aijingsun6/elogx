@@ -29,6 +29,7 @@
 -define(DEFAULT_CALL_TIMEOUT, 5000).
 -record(state, {
   name,
+  starter,
   starter_ref, % Ref
   config = #{},
   monitor_map = #{} %  Ref -> Pid
@@ -58,7 +59,7 @@ filter_config(Config) ->
 init(Name, Config) ->
   case pid_ctrl_start(Name, Config) of
     {ok, CtrlPid} ->
-      {ok, Config#{ctrl_pid=>CtrlPid}};
+      {ok, Config#{ctrl_pid => CtrlPid}};
     Error ->
       Error
   end.
@@ -68,7 +69,7 @@ check_config(_Name, set, undefined, NewHConfig) ->
 check_config(_Name, _SetOrUpdate, OldHConfig, NewHConfig0) ->
   {ok, maps:merge(OldHConfig, NewHConfig0)}.
 
-config_changed(_Name, Cfg, #{ctrl_pid:=Pid} = State) ->
+config_changed(_Name, Cfg, #{ctrl_pid := Pid} = State) ->
   Pid ! {update_config, Cfg},
   State.
 
@@ -76,10 +77,10 @@ filesync(_Name, _SyncAsync, State) ->
   Result = ok,
   {Result, State}.
 
-write(_Name, async, Bin, #{ctrl_pid:=Pid} = State) ->
+write(_Name, async, Bin, #{ctrl_pid := Pid} = State) ->
   Pid ! {log, Bin},
   {ok, State};
-write(_Name, sync, Bin, #{ctrl_pid:=Pid} = State) ->
+write(_Name, sync, Bin, #{ctrl_pid := Pid} = State) ->
   Msg = {log, Bin},
   Reply = ctrl_call(Pid, Msg),
   {Reply, State}.
@@ -96,7 +97,7 @@ handle_info(_, Msg, #{ctrl_pid := Pid} = State) ->
 handle_info(_, _, State) ->
   State.
 
-terminate(_Name, _Reason, #{ctrl_pid:=FWPid}) ->
+terminate(_Name, _Reason, #{ctrl_pid := FWPid}) ->
   case is_process_alive(FWPid) of
     true ->
       unlink(FWPid),
@@ -135,11 +136,11 @@ pid_ctrl_stop(Pid) ->
   Pid ! stop.
 
 add_pid(HandlerID, Pid) when is_atom(HandlerID), is_pid(Pid) ->
-  {ok, #{config:=#{olp:=OLP}}} = logger_config:get(logger, HandlerID),
+  {ok, #{config := #{olp := OLP}}} = logger_config:get(logger, HandlerID),
   ctrl_call(logger_olp:get_pid(OLP), {add_pid, Pid}).
 
 remove_pid(HandlerID, Pid) when is_atom(HandlerID), is_pid(Pid) ->
-  {ok, #{config:=#{olp:=OLP}}} = logger_config:get(logger, HandlerID),
+  {ok, #{config := #{olp := OLP}}} = logger_config:get(logger, HandlerID),
   ctrl_call(logger_olp:get_pid(OLP), {remove_pid, Pid}).
 
 ctrl_call(Pid, Msg) ->
@@ -161,18 +162,18 @@ pid_ctrl_init(HandlerName, HConfig, Starter) ->
   process_flag(trap_exit, true),
   Starter ! {self(), ok},
   Ref = erlang:monitor(process, Starter),
-  S = #state{starter_ref = Ref, name = HandlerName, config = HConfig},
+  S = #state{starter = Starter, starter_ref = Ref, name = HandlerName, config = HConfig},
   pid_ctrl_loop(S).
 
-pid_ctrl_loop(#state{monitor_map = M, starter_ref = SR} = S) ->
+pid_ctrl_loop(#state{monitor_map = M, starter_ref = SR,starter = Starter} = S) ->
   receive
   %% asynchronous event
     {log, Bin} ->
-      [P ! {log, self(), Bin} || P <- maps:values(M)],
+      [P ! {log, Starter, Bin} || P <- maps:values(M)],
       pid_ctrl_loop(S);
   %% synchronous event
     {{log, Bin}, {From, MRef}} ->
-      [P ! {log, self(), Bin} || P <- maps:values(M)],
+      [P ! {log, Starter, Bin} || P <- maps:values(M)],
       From ! {MRef, ok},
       pid_ctrl_loop(S);
     {update_config, Cfg} ->
