@@ -1,6 +1,6 @@
 {application, elogx,
   [{description, "erlang logger extension"},
-    {vsn, "0.0.1"},
+    {vsn, "0.0.2"},
     {registered, []},
     {mod, {elogx_app, []}},
     {applications,
@@ -10,6 +10,6 @@
     {env, []},
     {modules, []},
     {licenses, ["Apache 2.0"]},
-    {files,["src"]},
-    {links, []}
+    {files,["src","config"]},
+    {links, [{"GitHub", "https://github.com/aijingsun6/elogx"}]}
   ]}.
