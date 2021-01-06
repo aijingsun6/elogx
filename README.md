@@ -22,3 +22,19 @@ ok
 Shell got {log,<0.90.0>,<<"2021-01-06T16:52:56.798546+08:00 info: abc\n">>}
 ok
 ```
+
+
+### 2. elogx_cnt_h
+用途：每个日志文件写入固定的日志数量
+配置项目：
+
+| name | type | note |
+| --- | --- | --- |
+| file | string | 文件名称|
+| modes |`[atom()]`|  |
+| max_no_files | int | |
+| compress_on_rotate | boolean | 
+| file_check | int |
+| max_no_count |int | 每个文件最多写入多少条日志 |
+
+
